@@ -14,6 +14,7 @@ export class SupabaseService {
       environment.supabase.anonKey
     );
   }
+  
 
   get client() {
     return this.supabase;

@@ -1,0 +1,29 @@
+[build]
+  command = "npm run build"
+  functions = "netlify/functions"
+  publish = "dist/catabasis"
+
+[functions]
+  node_bundler = "esbuild"
+
+# Redirect rules for clean API URLs
+[[redirects]]
+  from = "/api/projects/:siteUuid/variables"
+  to = "/.netlify/functions/get-variables?siteUuid=:siteUuid"
+  status = 200
+
+[[redirects]]
+  from = "/api/projects/:siteUuid/variables/:key"
+  to = "/.netlify/functions/get-variable?siteUuid=:siteUuid&key=:key"
+  status = 200
+
+[[redirects]]
+  from = "/api/projects/:siteUuid/databases/:name"
+  to = "/.netlify/functions/get-database?siteUuid=:siteUuid&name=:name"
+  status = 200
+
+# SPA fallback for Angular routing
+[[redirects]]
+  from = "/*"
+  to = "/index.html"
+  status = 200

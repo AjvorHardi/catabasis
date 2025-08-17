@@ -1,0 +1,188 @@
+<div>
+  <!-- Database List View -->
+  <div *ngIf="!selectedDatabase">
+    <!-- Header -->
+    <div class="flex justify-between items-center mb-6">
+      <div>
+        <h3 class="text-lg font-medium text-gray-900">Databases</h3>
+        <p class="text-sm text-gray-600">Create and manage tables for structured data</p>
+      </div>
+      <button
+        (click)="showCreateDatabaseForm()"
+        class="bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-2 px-4 rounded-md transition-colors">
+        + Create Database
+      </button>
+    </div>
+
+    <!-- Error Message -->
+    <div *ngIf="error" class="mb-6 p-4 bg-red-50 border border-red-200 rounded-md">
+      <p class="text-sm text-red-600">{{ error }}</p>
+    </div>
+
+    <!-- Create Database Form -->
+    <div *ngIf="showCreateForm" class="mb-6 bg-gray-50 rounded-lg border border-gray-200 p-6">
+      <h4 class="text-md font-medium text-gray-900 mb-4">Create New Database</h4>
+      <form [formGroup]="createForm" (ngSubmit)="createDatabase()">
+        <div class="space-y-4">
+          <!-- Database Name -->
+          <div>
+            <label for="db-name" class="block text-sm font-medium text-gray-700 mb-2">
+              Database Name *
+            </label>
+            <input
+              id="db-name"
+              type="text"
+              formControlName="name"
+              class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+            <div *ngIf="createForm.get('name')?.invalid && createForm.get('name')?.touched" class="mt-1 text-sm text-red-600">
+              Database name is required
+            </div>
+          </div>
+
+          <!-- Description -->
+          <div>
+            <label for="db-description" class="block text-sm font-medium text-gray-700 mb-2">
+              Description (optional)
+            </label>
+            <textarea
+              id="db-description"
+              formControlName="description"
+              rows="3"
+              class="w-full px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+            </textarea>
+          </div>
+
+          <!-- Columns -->
+          <div>
+            <label class="block text-sm font-medium text-gray-700 mb-2">
+              Columns *
+            </label>
+            <div formArrayName="columns" class="space-y-2">
+              <div *ngFor="let column of columnsArray.controls; let i = index" [formGroupName]="i" class="flex items-center space-x-2">
+                <input
+                  type="text"
+                  formControlName="name"
+                  class="flex-1 px-3 py-2 border border-gray-300 rounded-md shadow-sm focus:outline-none focus:ring-indigo-500 focus:border-indigo-500">
+                <button
+                  type="button"
+                  (click)="removeColumn(i)"
+                  [disabled]="columnsArray.length <= 1"
+                  class="text-red-600 hover:text-red-800 disabled:text-gray-400 disabled:cursor-not-allowed p-2">
+                  <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+                  </svg>
+                </button>
+              </div>
+            </div>
+            <button
+              type="button"
+              (click)="addColumn()"
+              class="mt-2 text-indigo-600 hover:text-indigo-800 text-sm font-medium">
+              + Add Column
+            </button>
+            <div *ngIf="columnsArray.invalid && columnsArray.touched" class="mt-1 text-sm text-red-600">
+              At least one column is required
+            </div>
+          </div>
+        </div>
+
+        <div class="flex justify-end space-x-3 mt-6">
+          <button
+            type="button"
+            (click)="hideCreateDatabaseForm()"
+            class="bg-gray-200 hover:bg-gray-300 text-gray-700 font-medium py-2 px-4 rounded-md transition-colors">
+            Cancel
+          </button>
+          <button
+            type="submit"
+            [disabled]="!createForm.valid || loading"
+            class="bg-indigo-600 hover:bg-indigo-700 disabled:bg-gray-400 text-white font-medium py-2 px-4 rounded-md transition-colors">
+            <span *ngIf="!loading">Create Database</span>
+            <span *ngIf="loading">Creating...</span>
+          </button>
+        </div>
+      </form>
+    </div>
+
+    <!-- Loading State -->
+    <div *ngIf="loading && databases.length === 0" class="text-center py-8">
+      <div class="text-gray-500">Loading databases...</div>
+    </div>
+
+    <!-- Empty State -->
+    <div *ngIf="!loading && databases.length === 0 && !showCreateForm" class="text-center py-12">
+      <div class="text-4xl mb-4">🗃️</div>
+      <h4 class="text-lg font-medium text-gray-900 mb-2">No databases yet</h4>
+      <p class="text-gray-600 mb-6">Create your first database to store structured data like testimonials, FAQs, or any tabular information</p>
+      <button
+        (click)="showCreateDatabaseForm()"
+        class="bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-2 px-4 rounded-md transition-colors">
+        Create Your First Database
+      </button>
+    </div>
+
+    <!-- Databases List -->
+    <div *ngIf="databases.length > 0" class="grid grid-cols-1 md:grid-cols-2 gap-4">
+      <div *ngFor="let database of databases" class="bg-white border border-gray-200 rounded-lg p-4 hover:shadow-md transition-shadow">
+        <div class="flex justify-between items-start mb-3">
+          <div class="flex-1 min-w-0">
+            <h4 class="text-lg font-medium text-gray-900 truncate">{{ database.name }}</h4>
+            <p *ngIf="database.description" class="text-sm text-gray-600 mt-1 line-clamp-2">{{ database.description }}</p>
+          </div>
+          <button
+            (click)="deleteDatabase(database)"
+            class="ml-2 text-gray-400 hover:text-red-600 transition-colors"
+            title="Delete database">
+            <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"></path>
+            </svg>
+          </button>
+        </div>
+
+        <!-- Columns Preview -->
+        <div class="mb-4">
+          <div class="text-xs text-gray-500 mb-2">Columns:</div>
+          <div class="flex flex-wrap gap-1">
+            <span *ngFor="let column of database.columns" class="inline-block bg-gray-100 text-gray-700 text-xs px-2 py-1 rounded">
+              {{ column }}
+            </span>
+          </div>
+        </div>
+
+        <div class="flex items-center justify-between">
+          <div class="text-xs text-gray-500">
+            Created {{ formatDate(database.created_at) }}
+          </div>
+          <button
+            (click)="selectDatabase(database)"
+            class="bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium py-2 px-3 rounded-md transition-colors">
+            Open Database
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Database Detail View -->
+  <div *ngIf="selectedDatabase">
+    <!-- Database Header -->
+    <div class="flex items-center mb-6">
+      <button
+        (click)="backToDatabasesList()"
+        class="text-gray-600 hover:text-gray-900 transition-colors mr-4">
+        <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+        </svg>
+      </button>
+      <div>
+        <h3 class="text-lg font-medium text-gray-900">{{ selectedDatabase.name }}</h3>
+        <p *ngIf="selectedDatabase.description" class="text-sm text-gray-600">{{ selectedDatabase.description }}</p>
+      </div>
+    </div>
+
+    <!-- Database Editor -->
+    <div class="bg-white border border-gray-200 rounded-lg p-6">
+      <app-database-editor [database]="selectedDatabase"></app-database-editor>
+    </div>
+  </div>
+</div>

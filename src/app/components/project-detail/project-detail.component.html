@@ -1,0 +1,86 @@
+<div class="min-h-screen bg-gray-50">
+  <!-- Navigation -->
+  <nav class="bg-white shadow-sm border-b">
+    <div class="container mx-auto px-4">
+      <div class="flex justify-between items-center h-16">
+        <div class="flex items-center space-x-4">
+          <button
+            (click)="goBack()"
+            class="text-gray-600 hover:text-gray-900 transition-colors">
+            <svg class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7"></path>
+            </svg>
+          </button>
+          <span class="text-xl font-bold text-indigo-600">📊 Catabasis</span>
+          <span *ngIf="project" class="text-gray-400">•</span>
+          <span *ngIf="project" class="text-gray-700 font-medium">{{ project.name }}</span>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- Loading State -->
+  <div *ngIf="loading" class="container mx-auto px-4 py-8">
+    <div class="text-center py-12">
+      <div class="text-gray-500">Loading project...</div>
+    </div>
+  </div>
+
+  <!-- Error State -->
+  <div *ngIf="error && !loading" class="container mx-auto px-4 py-8">
+    <div class="text-center py-12">
+      <div class="text-red-600 mb-4">{{ error }}</div>
+      <button
+        (click)="goBack()"
+        class="bg-indigo-600 hover:bg-indigo-700 text-white font-medium py-2 px-4 rounded-md transition-colors">
+        Back to Dashboard
+      </button>
+    </div>
+  </div>
+
+  <!-- Project Content -->
+  <div *ngIf="project && !loading" class="container mx-auto px-4 py-8">
+    <!-- Project Header -->
+    <div class="mb-8">
+      <h1 class="text-3xl font-bold text-gray-900">{{ project.name }}</h1>
+      <p *ngIf="project.description" class="text-gray-600 mt-2">{{ project.description }}</p>
+    </div>
+
+    <!-- Tabs -->
+    <div class="mb-8">
+      <div class="border-b border-gray-200">
+        <nav class="-mb-px flex space-x-8">
+          <button
+            (click)="setActiveTab('variables')"
+            [class]="'whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm transition-colors ' + 
+                     (activeTab === 'variables' 
+                       ? 'border-indigo-500 text-indigo-600' 
+                       : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300')">
+            Variables
+          </button>
+          <button
+            (click)="setActiveTab('databases')"
+            [class]="'whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm transition-colors ' + 
+                     (activeTab === 'databases' 
+                       ? 'border-indigo-500 text-indigo-600' 
+                       : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300')">
+            Databases
+          </button>
+        </nav>
+      </div>
+    </div>
+
+    <!-- Tab Content -->
+    <div class="tab-content">
+      <!-- Variables Tab -->
+      <div *ngIf="activeTab === 'variables'" class="bg-white rounded-lg border border-gray-200 p-8">
+        <app-variables-manager [projectId]="project.id"></app-variables-manager>
+      </div>
+
+      <!-- Databases Tab -->
+      <div *ngIf="activeTab === 'databases'" class="bg-white rounded-lg border border-gray-200 p-8">
+        <app-databases-manager [projectId]="project.id"></app-databases-manager>
+      </div>
+    </div>
+  </div>
+</div>
