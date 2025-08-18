@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
 import { SupabaseService } from './supabase.service';
+import { BuildHooksService } from './build-hooks.service';
 import { Variable, CreateVariableRequest } from '../models';
 
 @Injectable({
@@ -10,7 +11,10 @@ export class VariablesService {
   private variablesSubject = new BehaviorSubject<Variable[]>([]);
   public variables$ = this.variablesSubject.asObservable();
 
-  constructor(private supabase: SupabaseService) {}
+  constructor(
+    private supabase: SupabaseService,
+    private buildHooks: BuildHooksService
+  ) {}
 
   async loadVariables(projectId: string): Promise<void> {
     const { data, error } = await this.supabase.client
@@ -47,6 +51,21 @@ export class VariablesService {
     }
 
     await this.loadVariables(request.project_id);
+    
+    // Trigger build hook for variable creation
+    this.buildHooks.triggerBuildHook(
+      request.project_id,
+      'variable_update',
+      { action: 'create', variable: { name: data.name, value: data.value } }
+    ).subscribe({
+      next: (deploymentId) => {
+        if (deploymentId) {
+          console.log('Build hook triggered for variable creation:', deploymentId);
+        }
+      },
+      error: (error) => console.warn('Build hook failed:', error)
+    });
+    
     return data;
   }
 
@@ -66,6 +85,20 @@ export class VariablesService {
     const currentVariables = this.variablesSubject.value;
     const updatedVariables = currentVariables.map(v => v.id === id ? data : v);
     this.variablesSubject.next(updatedVariables);
+    
+    // Trigger build hook for variable update
+    this.buildHooks.triggerBuildHook(
+      data.project_id,
+      'variable_update',
+      { action: 'update', variable: { name: data.name, value: data.value } }
+    ).subscribe({
+      next: (deploymentId) => {
+        if (deploymentId) {
+          console.log('Build hook triggered for variable update:', deploymentId);
+        }
+      },
+      error: (error) => console.warn('Build hook failed:', error)
+    });
 
     return data;
   }
@@ -82,5 +115,19 @@ export class VariablesService {
     }
 
     await this.loadVariables(projectId);
+    
+    // Trigger build hook for variable deletion
+    this.buildHooks.triggerBuildHook(
+      projectId,
+      'variable_update',
+      { action: 'delete', variable_id: id }
+    ).subscribe({
+      next: (deploymentId) => {
+        if (deploymentId) {
+          console.log('Build hook triggered for variable deletion:', deploymentId);
+        }
+      },
+      error: (error) => console.warn('Build hook failed:', error)
+    });
   }
 }

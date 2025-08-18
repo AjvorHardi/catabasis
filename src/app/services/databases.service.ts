@@ -1,6 +1,7 @@
 import { Injectable } from '@angular/core';
 import { BehaviorSubject } from 'rxjs';
 import { SupabaseService } from './supabase.service';
+import { BuildHooksService } from './build-hooks.service';
 import { Database, DatabaseRow, CreateDatabaseRequest, CreateDatabaseRowRequest } from '../models';
 
 @Injectable({
@@ -13,7 +14,10 @@ export class DatabasesService {
   private rowsSubject = new BehaviorSubject<DatabaseRow[]>([]);
   public rows$ = this.rowsSubject.asObservable();
 
-  constructor(private supabase: SupabaseService) {}
+  constructor(
+    private supabase: SupabaseService,
+    private buildHooks: BuildHooksService
+  ) {}
 
   async loadDatabases(projectId: string): Promise<void> {
     const { data, error } = await this.supabase.client
@@ -122,6 +126,30 @@ export class DatabasesService {
     }
 
     await this.loadDatabaseRows(request.database_id);
+    
+    // Get project ID for build hook
+    const { data: database } = await this.supabase.client
+      .from('databases')
+      .select('project_id, name')
+      .eq('id', request.database_id)
+      .single();
+    
+    if (database) {
+      // Trigger build hook for database row creation
+      this.buildHooks.triggerBuildHook(
+        database.project_id,
+        'database_update',
+        { action: 'create_row', database: database.name, row_data: request.data }
+      ).subscribe({
+        next: (deploymentId) => {
+          if (deploymentId) {
+            console.log('Build hook triggered for database row creation:', deploymentId);
+          }
+        },
+        error: (error) => console.warn('Build hook failed:', error)
+      });
+    }
+    
     return data;
   }
 
@@ -141,6 +169,29 @@ export class DatabasesService {
     const currentRows = this.rowsSubject.value;
     const updatedRows = currentRows.map(row => row.id === id ? updatedRow : row);
     this.rowsSubject.next(updatedRows);
+    
+    // Get project ID for build hook
+    const { data: database } = await this.supabase.client
+      .from('databases')
+      .select('project_id, name')
+      .eq('id', updatedRow.database_id)
+      .single();
+    
+    if (database) {
+      // Trigger build hook for database row update
+      this.buildHooks.triggerBuildHook(
+        database.project_id,
+        'database_update',
+        { action: 'update_row', database: database.name, row_id: id, row_data: data }
+      ).subscribe({
+        next: (deploymentId) => {
+          if (deploymentId) {
+            console.log('Build hook triggered for database row update:', deploymentId);
+          }
+        },
+        error: (error) => console.warn('Build hook failed:', error)
+      });
+    }
 
     return updatedRow;
   }
@@ -157,5 +208,28 @@ export class DatabasesService {
     }
 
     await this.loadDatabaseRows(databaseId);
+    
+    // Get project ID for build hook
+    const { data: database } = await this.supabase.client
+      .from('databases')
+      .select('project_id, name')
+      .eq('id', databaseId)
+      .single();
+    
+    if (database) {
+      // Trigger build hook for database row deletion
+      this.buildHooks.triggerBuildHook(
+        database.project_id,
+        'database_update',
+        { action: 'delete_row', database: database.name, row_id: id }
+      ).subscribe({
+        next: (deploymentId) => {
+          if (deploymentId) {
+            console.log('Build hook triggered for database row deletion:', deploymentId);
+          }
+        },
+        error: (error) => console.warn('Build hook failed:', error)
+      });
+    }
   }
 }

@@ -12,6 +12,9 @@ export interface Project {
   description?: string;
   site_uuid: string;
   api_secret: string;
+  build_hook_url?: string;
+  auto_deploy: boolean;
+  last_deploy_triggered?: string;
   created_at: string;
   updated_at: string;
 }

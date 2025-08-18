@@ -5,17 +5,18 @@ import { ProjectsService } from '../../services/projects.service';
 import { VariablesManagerComponent } from '../variables-manager/variables-manager.component';
 import { DatabasesManagerComponent } from '../databases-manager/databases-manager.component';
 import { Project } from '../../models';
+import { ProjectIntegrationGuideComponent } from '../project-integration-guide/project-integration-guide.component';
 
 @Component({
   selector: 'app-project-detail',
   standalone: true,
-  imports: [CommonModule, VariablesManagerComponent, DatabasesManagerComponent],
+  imports: [CommonModule, VariablesManagerComponent, DatabasesManagerComponent, ProjectIntegrationGuideComponent],
   templateUrl: './project-detail.component.html',
   styles: []
 })
 export class ProjectDetailComponent implements OnInit {
   project: Project | null = null;
-  activeTab: 'variables' | 'databases' = 'variables';
+  activeTab: 'guide' | 'variables' | 'databases' = 'guide';
   loading = true;
   error = '';
 
@@ -49,7 +50,7 @@ export class ProjectDetailComponent implements OnInit {
     }
   }
 
-  setActiveTab(tab: 'variables' | 'databases'): void {
+  setActiveTab(tab: 'guide' | 'variables' | 'databases'): void {
     this.activeTab = tab;
   }
 

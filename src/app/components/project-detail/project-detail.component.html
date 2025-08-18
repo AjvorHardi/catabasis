@@ -51,6 +51,14 @@
       <div class="border-b border-gray-200">
         <nav class="-mb-px flex space-x-8">
           <button
+            (click)="setActiveTab('guide')"
+            [class]="'whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm transition-colors ' + 
+                     (activeTab === 'guide' 
+                       ? 'border-indigo-500 text-indigo-600' 
+                       : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300')">
+            🚀 How to Use
+          </button>
+          <button
             (click)="setActiveTab('variables')"
             [class]="'whitespace-nowrap py-2 px-1 border-b-2 font-medium text-sm transition-colors ' + 
                      (activeTab === 'variables' 
@@ -72,6 +80,11 @@
 
     <!-- Tab Content -->
     <div class="tab-content">
+      <!-- How to Use Tab -->
+      <div *ngIf="activeTab === 'guide'">
+        <app-project-integration-guide [project]="project"></app-project-integration-guide>
+      </div>
+
       <!-- Variables Tab -->
       <div *ngIf="activeTab === 'variables'" class="bg-white rounded-lg border border-gray-200 p-8">
         <app-variables-manager [projectId]="project.id"></app-variables-manager>
