@@ -41,6 +41,7 @@ testem.log
 .DS_Store
 Thumbs.db
 
+/src/environments
 /CLAUDE.md
 # Local Netlify folder
 .netlify
