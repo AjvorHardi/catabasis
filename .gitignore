@@ -43,3 +43,5 @@ Thumbs.db
 
 /src/environments
 /CLAUDE.md
+# Local Netlify folder
+.netlify
