@@ -4,19 +4,20 @@ import { ActivatedRoute, Router } from '@angular/router';
 import { ProjectsService } from '../../services/projects.service';
 import { VariablesManagerComponent } from '../variables-manager/variables-manager.component';
 import { DatabasesManagerComponent } from '../databases-manager/databases-manager.component';
+import { BuildHooksSettingsComponent } from '../build-hooks-settings/build-hooks-settings.component';
 import { Project } from '../../models';
 import { ProjectIntegrationGuideComponent } from '../project-integration-guide/project-integration-guide.component';
 
 @Component({
   selector: 'app-project-detail',
   standalone: true,
-  imports: [CommonModule, VariablesManagerComponent, DatabasesManagerComponent, ProjectIntegrationGuideComponent],
+  imports: [CommonModule, VariablesManagerComponent, DatabasesManagerComponent, BuildHooksSettingsComponent, ProjectIntegrationGuideComponent],
   templateUrl: './project-detail.component.html',
   styles: []
 })
 export class ProjectDetailComponent implements OnInit {
   project: Project | null = null;
-  activeTab: 'guide' | 'variables' | 'databases' = 'guide';
+  activeTab: 'guide' | 'variables' | 'databases' | 'settings' = 'guide';
   loading = true;
   error = '';
 
@@ -50,7 +51,7 @@ export class ProjectDetailComponent implements OnInit {
     }
   }
 
-  setActiveTab(tab: 'guide' | 'variables' | 'databases'): void {
+  setActiveTab(tab: 'guide' | 'variables' | 'databases' | 'settings'): void {
     this.activeTab = tab;
   }
 
