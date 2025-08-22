@@ -1,7 +1,7 @@
 [build]
   command = "npm run build"
   functions = "netlify/functions"
-  publish = "dist/catabasis"
+  publish = "dist/catabasis/browser"
 
 [build.environment]
   NODE_VERSION = "20"
